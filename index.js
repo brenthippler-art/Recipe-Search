@@ -1,3 +1,8 @@
+// ===============================
+// Smart Recipe Search Project (GitHub Pages + Vercel Proxy)
+// ===============================
+
+// ---- DOM ----
 const searchInput = document.querySelector("#searchInput");
 const searchBtn = document.querySelector("#searchBtn");
 const searchBox = document.querySelector(".search");
@@ -9,19 +14,18 @@ const sortSelect = document.querySelector("#sortSelect");
 const newSearchBtn = document.querySelector("#newSearchBtn");
 const closeModalBtn = document.querySelector("#closeModalBtn");
 
+// ---- State ----
 const recipeDetailsCache = new Map();
 let currentRecipes = [];
 
-// ✅ OPTIONAL: if API is down/limit hit, set true so UI still demos
+const PROXY_BASE = "https://food-project-seven-eosin.vercel.app";
+
+// Optional: if the API/proxy is down, flip this to true to demo UI
 const DEMO_MODE = false;
 
-// API headers API Key still visible - set to proxy/node before gitHub
-const myHeaders = new Headers();
-myHeaders.append("apikey", "YWHjlzqXhxfAeCEJklzxktqyAReFvsBb");
-
-const requestOptions = { method: "GET", headers: myHeaders };
-
-// ---------- UI helpers ----------
+// -------------------------------
+// UI helpers
+// -------------------------------
 function openModal(titleText) {
   modalTitle.textContent = titleText;
   modal.classList.remove("hidden");
@@ -54,49 +58,62 @@ function escapeHtml(str = "") {
     .replaceAll("'", "&#039;");
 }
 
-// ---------- API helpers ----------
-async function safeJsonFetch(url) {
-  const res = await fetch(url, requestOptions);
+// -------------------------------
+// Proxy fetch helpers
+// -------------------------------
+async function fetchJson(url) {
+  const res = await fetch(url);
   const text = await res.text();
 
-  if (!res.ok) {
-    let friendly = `Request failed (${res.status}).`;
-    if (res.status === 401 || res.status === 403) friendly = "API key invalid or not authorized.";
-    if (res.status === 402) friendly = "Quota exceeded / payment required on API plan.";
-    if (res.status === 429) friendly = "Too many requests (rate limited). Try again later.";
-
-    console.error("API Error:", res.status, text);
-    throw new Error(`${friendly} Details: ${text}`);
-  }
-
+  // Some errors are not JSON; handle safely
+  let data;
   try {
-    return JSON.parse(text);
+    data = text ? JSON.parse(text) : null;
   } catch {
-    throw new Error("API returned non-JSON response.");
+    data = { error: text || "Non-JSON response from server." };
   }
+
+  if (!res.ok) {
+    const msg =
+      data?.error ||
+      data?.message ||
+      `Request failed (${res.status}).`;
+    throw new Error(msg);
+  }
+
+  return data;
 }
 
 async function fetchRecipes(query) {
   if (DEMO_MODE) return demoRecipes(query);
 
-  const url =
-    `https://api.apilayer.com/spoonacular/recipes/complexSearch` +
-    `?query=${encodeURIComponent(query)}` +
-    `&addRecipeNutrition=true&number=12`;
+  if (!PROXY_BASE || PROXY_BASE.includes("YOUR-VERCEL-APP")) {
+    throw new Error(
+      'Missing PROXY_BASE. Set it to your Vercel URL, e.g. "https://my-app.vercel.app".'
+    );
+  }
 
-  const data = await safeJsonFetch(url);
-  return data.results || [];
+  const url = `${PROXY_BASE}/api/search?q=${encodeURIComponent(query)}&number=12`;
+  const data = await fetchJson(url);
+  return data?.results || [];
 }
 
 async function fetchRecipeDetails(id) {
   if (DEMO_MODE) return demoRecipeDetails(id);
 
-  const url = `https://api.apilayer.com/spoonacular/recipes/${id}/information?includeNutrition=false`;
-  return safeJsonFetch(url);
+  if (!PROXY_BASE || PROXY_BASE.includes("YOUR-VERCEL-APP")) {
+    throw new Error(
+      'Missing PROXY_BASE. Set it to your Vercel URL, e.g. "https://my-app.vercel.app".'
+    );
+  }
+
+  const url = `${PROXY_BASE}/api/details?id=${encodeURIComponent(id)}`;
+  return fetchJson(url);
 }
 
-// ---------- Nutrition helpers ----------
-
+// -------------------------------
+// Nutrition helpers
+// -------------------------------
 function getNutrient(recipe, name) {
   const nutrients = recipe?.nutrition?.nutrients;
   if (!Array.isArray(nutrients)) return null;
@@ -111,7 +128,12 @@ function getNutrient(recipe, name) {
 }
 
 function getMacroAmount(recipe, metric) {
-  const map = { calories: "Calories", carbs: "Carbohydrates", protein: "Protein", fat: "Fat" };
+  const map = {
+    calories: "Calories",
+    carbs: "Carbohydrates",
+    protein: "Protein",
+    fat: "Fat",
+  };
   const nutrientName = map[metric];
   if (!nutrientName) return null;
 
@@ -145,6 +167,9 @@ function sortRecipes(arr, sortValue) {
   });
 }
 
+// -------------------------------
+// Details helpers
+// -------------------------------
 function slugify(str = "") {
   return String(str)
     .toLowerCase()
@@ -154,23 +179,28 @@ function slugify(str = "") {
 
 function extractSteps(details) {
   const analyzed = details?.analyzedInstructions;
-  if (Array.isArray(analyzed) && analyzed.length && Array.isArray(analyzed[0].steps)) {
-    return analyzed[0].steps.map(s => s.step).filter(Boolean);
+  if (
+    Array.isArray(analyzed) &&
+    analyzed.length &&
+    Array.isArray(analyzed[0].steps)
+  ) {
+    return analyzed[0].steps.map((s) => s.step).filter(Boolean);
   }
 
   if (typeof details?.instructions === "string" && details.instructions.trim()) {
     return details.instructions
       .replace(/<[^>]*>/g, "")
       .split(".")
-      .map(s => s.trim())
+      .map((s) => s.trim())
       .filter(Boolean);
   }
 
   return [];
 }
 
-// ---------- Rendering ----------
-
+// -------------------------------
+// Rendering
+// -------------------------------
 function renderRecipes(recipesArr) {
   recipesContainer.innerHTML = "";
 
@@ -208,7 +238,9 @@ function renderRecipes(recipesArr) {
           <div class="recipe-card__overlay-content">
             <p class="muted">Click card to load recipe details…</p>
           </div>
-          <a class="recipe-card__overlay-link" href="#" target="_blank" rel="noopener">View Full Recipe →</a>
+          <a class="recipe-card__overlay-link" href="#" target="_blank" rel="noopener">
+            View Full Recipe →
+          </a>
         </div>
       </div>
     `;
@@ -229,10 +261,11 @@ function setCardOverlayError(card, text = "Couldn’t load recipe details.") {
   card.classList.add("show-overlay");
 }
 
-// ---------- Events ----------
+// -------------------------------
+// Events
+// -------------------------------
 
-// Click card to load details
-
+// Click card to load details (saves API calls vs hover)
 recipesContainer.addEventListener("click", async (e) => {
   const card = e.target.closest(".recipe-card");
   if (!card) return;
@@ -244,6 +277,7 @@ recipesContainer.addEventListener("click", async (e) => {
 
   if (card.dataset.loading === "1") return;
 
+  // If cached, just show it
   if (recipeDetailsCache.has(id)) {
     card.classList.add("show-overlay");
     return;
@@ -258,11 +292,12 @@ recipesContainer.addEventListener("click", async (e) => {
 
     const ingredients = (details.extendedIngredients || [])
       .slice(0, 8)
-      .map(i => `<li>${escapeHtml(i.original)}</li>`)
+      .map((i) => `<li>${escapeHtml(i.original)}</li>`)
       .join("");
 
-    const steps = extractSteps(details).slice(0, 3)
-      .map(s => `<li>${escapeHtml(s)}</li>`)
+    const steps = extractSteps(details)
+      .slice(0, 3)
+      .map((s) => `<li>${escapeHtml(s)}</li>`)
       .join("");
 
     const overlayContent = card.querySelector(".recipe-card__overlay-content");
@@ -285,15 +320,14 @@ recipesContainer.addEventListener("click", async (e) => {
     card.classList.add("show-overlay");
   } catch (err) {
     console.error(err);
-    setCardOverlayError(card, "Details failed (limit or API error).");
+    setCardOverlayError(card, err.message || "Details failed.");
     overlayLink.href = `https://spoonacular.com/recipes/${id}`;
   } finally {
     delete card.dataset.loading;
   }
 });
 
-// Search
-
+// Search button
 searchBtn.addEventListener("click", async () => {
   const q = searchInput.value.trim();
   if (!q) return alert("Please enter a food or ingredient");
@@ -307,12 +341,16 @@ searchBtn.addEventListener("click", async () => {
     openModal(`Recipes for "${q}"`);
 
     if (!currentRecipes.length) {
-      recipesContainer.innerHTML = `<p style="padding:16px;">No recipes found. Try a different search.</p>`;
+      recipesContainer.innerHTML =
+        `<p style="padding:16px;">No recipes found. Try a different search.</p>`;
       return;
     }
 
     const initialSort = sortSelect?.value || "";
-    const displayList = initialSort ? sortRecipes([...currentRecipes], initialSort) : currentRecipes;
+    const displayList = initialSort
+      ? sortRecipes([...currentRecipes], initialSort)
+      : currentRecipes;
+
     renderRecipes(displayList);
   } catch (err) {
     console.error(err);
@@ -323,14 +361,11 @@ searchBtn.addEventListener("click", async () => {
 });
 
 // Enter key triggers search
+searchInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") searchBtn.click();
+});
 
-_toggleEnterSearch();
-function _toggleEnterSearch() {
-  searchInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") searchBtn.click();
-  });
-}
-
+// Sort
 if (sortSelect) {
   sortSelect.addEventListener("change", () => {
     const sorted = sortRecipes([...currentRecipes], sortSelect.value);
@@ -338,48 +373,73 @@ if (sortSelect) {
   });
 }
 
-if (newSearchBtn) newSearchBtn.addEventListener("click", () => {
-  closeModal();
-  searchInput.focus();
-});
+// New search
+if (newSearchBtn) {
+  newSearchBtn.addEventListener("click", () => {
+    closeModal();
+    searchInput.focus();
+  });
+}
 
-if (closeModalBtn) closeModalBtn.addEventListener("click", closeModal);
+// Close modal button
+if (closeModalBtn) {
+  closeModalBtn.addEventListener("click", closeModal);
+}
 
+// Click outside panel closes modal
 modal.addEventListener("click", (e) => {
   if (e.target === modal) closeModal();
 });
 
+// ESC closes modal
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !modal.classList.contains("hidden")) closeModal();
 });
 
-// ---------- Demo fallback ----------
-
+// -------------------------------
+// Demo fallback (optional)
+// -------------------------------
 function demoRecipes(query) {
-  // Fake results so the UI works without API
   return [
     {
       id: "demo-1",
       title: `${query} Bowl`,
       image: "./assets/placeholder-recipe.png",
-      nutrition: { nutrients: [
-        { name: "Calories", amount: 420, unit: "kcal" },
-        { name: "Carbohydrates", amount: 35, unit: "g" },
-        { name: "Protein", amount: 30, unit: "g" },
-        { name: "Fat", amount: 18, unit: "g" },
-      ]}
+      nutrition: {
+        nutrients: [
+          { name: "Calories", amount: 420, unit: "kcal" },
+          { name: "Carbohydrates", amount: 35, unit: "g" },
+          { name: "Protein", amount: 30, unit: "g" },
+          { name: "Fat", amount: 18, unit: "g" },
+        ],
+      },
     },
     {
       id: "demo-2",
       title: `${query} Skillet`,
       image: "./assets/placeholder-recipe.png",
-      nutrition: { nutrients: [
-        { name: "Calories", amount: 610, unit: "kcal" },
-        { name: "Carbohydrates", amount: 50, unit: "g" },
-        { name: "Protein", amount: 22, unit: "g" },
-        { name: "Fat", amount: 28, unit: "g" },
-      ]}
-    }
+      nutrition: {
+        nutrients: [
+          { name: "Calories", amount: 610, unit: "kcal" },
+          { name: "Carbohydrates", amount: 50, unit: "g" },
+          { name: "Protein", amount: 22, unit: "g" },
+          { name: "Fat", amount: 28, unit: "g" },
+        ],
+      },
+    },
+    {
+      id: "demo-3",
+      title: `${query} Salad`,
+      image: "./assets/placeholder-recipe.png",
+      nutrition: {
+        nutrients: [
+          { name: "Calories", amount: 280, unit: "kcal" },
+          { name: "Carbohydrates", amount: 22, unit: "g" },
+          { name: "Protein", amount: 14, unit: "g" },
+          { name: "Fat", amount: 12, unit: "g" },
+        ],
+      },
+    },
   ];
 }
 
@@ -393,10 +453,14 @@ function demoRecipeDetails(id) {
       { original: "2 tbsp demo spice" },
       { original: "Salt to taste" },
     ],
-    analyzedInstructions: [{ steps: [
-      { step: "Mix ingredients." },
-      { step: "Cook for 10 minutes." },
-      { step: "Serve and enjoy." },
-    ]}]
+    analyzedInstructions: [
+      {
+        steps: [
+          { step: "Mix ingredients." },
+          { step: "Cook for 10 minutes." },
+          { step: "Serve and enjoy." },
+        ],
+      },
+    ],
   };
 }

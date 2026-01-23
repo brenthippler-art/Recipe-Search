@@ -3,13 +3,15 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  if (req.method === "OPTIONS") return res.status(204).end();
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
 
   const id = (req.query.id || "").toString().trim();
   if (!id) return res.status(400).json({ error: "Missing id param" });
 
   const API_KEY = process.env.APILAYER_KEY;
-  if (!API_KEY) return res.status(500).json({ error: "Missing APILAYER_KEY env var" });
+  if (!API_KEY) return res.status(500).json({ error: "Missing APILAYER_KEY env vari" });
 
   const url = `https://api.apilayer.com/spoonacular/recipes/${encodeURIComponent(id)}/information?includeNutrition=false`;
 
