@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Recipe Search Home</title>
+
+      <link rel="stylesheet" href="./index.css">
+      <script src="./index.js" defer></script>
+        <script src="https://kit.fontawesome.com/b1a92af70c.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <main id="landingContent">
+    <section id="landing">
+      <!-- Nav -->
+      <div class="nav">
+        <div class="nav__left">
+          <figure class="nav__logo--wrapper">
+            <img class="nav__logo" src="./assets/logo.png" alt="project logo">
+          </figure>
+        </div>
+        
+        <ul class="nav__right">
+          <li><a href="#" class="nav__link link__hover-effect">Home</a></li>
+          <li><a href="#" class="nav__link link__hover-effect">Search</a></li>
+          <li><a href="#" class="nav__link--contact btn--pink"  onclick="event.preventDefault(); alert('This feature has not been implemented yet.')">Contact</a></li>
+        </ul>          
+      </div>
+     
+      <!-- hero -->
+      <div class="hero">
+        <h1 class="hero__title">Search. Sort. <span class="green">Eat.</span></h1>
+        <h2 class="hero__cta">Search by ingredients or meal name and sort recipes by calories, carbs, protein, and fat.</h2>
+      </div>
+      
+      <!-- Search -->
+      <div class="search">
+        <input type="text" id="searchInput" class="food" name="food" placeholder="examples: burger, fig, chicken">
+        <button type="button" id="searchBtn" class="submit__btn">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+        <div class="search__loading" aria-hidden="true">
+          <i class="fa-solid fa-spinner"></i>
+        </div>
+      </div>
+    
+      <!-- Animation -->
+      <div class="animation">
+        <img src="./assets/undraw_groceries_4via.png" class="food__img--one" alt="lady grocery shopping">
+        <img src="./assets/undraw_barbecue_k11q.png" class="food__img--two" alt="man grilling">
+      </div>
+     </section>
+  </main>
+ 
+  <!-- Results Modal -->
+  <div id="resultsModal" class="modal hidden" aria-hidden="true">
+    <div class="modal__panel">
+      <div class="modal__header">
+        <h2 id="modalTitle" class="modal__title">Recipes</h2>
+        <p class="muted">Hover for recipe details</p>
+        <div class="modal__controls">
+          <label for="sortSelect" class="recipes__label">Sort</label>
+          <select id="sortSelect" class="recipes__select">
+            <option value=""></option>
+            <option value="calories_asc">Calories: Low → High</option>
+            <option value="calories_desc">Calories: High → Low</option>
+            <option value="carbs_asc">Carbs: Low → High</option>
+            <option value="carbs_desc">Carbs: High → Low</option>
+            <option value="protein_asc">Protein: Low → High</option>
+            <option value="protein_desc">Protein: High → Low</option>
+            <option value="fat_asc">Fat: Low → High</option>
+            <option value="fat_desc">Fat: High → Low</option>
+          </select>
+          <button id="newSearchBtn" class="recipes__new-search">New Search</button>
+          <button id="closeModalBtn" class="modal__close" aria-label="Close">✕</button>
+        </div>
+      </div>
+      <div class="modal__body">
+        <div id="recipesContainer" class="recipes__grid"></div>
+      </div>
+    </div>
+  </div>  
+</body>
+</html>
