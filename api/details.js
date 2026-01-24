@@ -1,4 +1,3 @@
-// /api/details.js
 // Vercel Serverless Function (Node) - Debuggable proxy for recipe details via APILayer
 
 export default async function handler(req, res) {
@@ -12,7 +11,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Use WHATWG URL API (avoids url.parse deprecation)
     const { searchParams } = new URL(req.url, "http://localhost");
     const id = (searchParams.get("id") || "").trim();
     const includeNutrition = (searchParams.get("includeNutrition") || "false").trim();

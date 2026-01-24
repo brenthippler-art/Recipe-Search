@@ -36,7 +36,7 @@
       
       <!-- Search -->
       <div class="search">
-        <input type="text" id="searchInput" class="food" name="food" placeholder="examples: burger, fig, chicken">
+        <input type="text" id="searchInput" class="food" name="food" placeholder="example: Fettuccine Alfredo">
         <button type="button" id="searchBtn" class="submit__btn">
           <i class="fa-solid fa-magnifying-glass"></i>
         </button>
@@ -52,7 +52,22 @@
       </div>
      </section>
   </main>
- 
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer__inner">
+      <figure class="footer__logo--wrapper">
+        <img class="footer__logo" src="./assets/logo.png" alt="project logo">
+      </figure>
+      <p class="copyright">© 2026 Brenton Hippler. All rights reserved.</p>
+      <ul class="footer__right">
+        <li><a href="#" class="footer__link link__hover-effect--white">Home</a></li>
+        <li><a href="#" class="footer__link link__hover-effect--white">Search</a></li>
+        <li><a href="#" class="footer__link link__hover-effect--white"  onclick="event.preventDefault(); alert('This feature has not been implemented yet.')">Contact</a></li>
+      </ul>     
+    </div> 
+  </div>
+
   <!-- Results Modal -->
   <div id="resultsModal" class="modal hidden" aria-hidden="true">
     <div class="modal__panel">
@@ -78,7 +93,7 @@
       </div>
       <div class="modal__body">
         <div id="recipesContainer" class="recipes__grid"></div>
-      </div>
+      </div>   
     </div>
   </div>  
 </body>

@@ -1,4 +1,3 @@
-// /api/search.js
 // Vercel Serverless Function (Node) - Debuggable proxy for Spoonacular via APILayer
 
 export default async function handler(req, res) {
@@ -12,7 +11,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Use WHATWG URL API (avoids url.parse deprecation)
     const { searchParams } = new URL(req.url, "http://localhost");
     const q = (searchParams.get("q") || "").trim();
     const number = (searchParams.get("number") || "12").trim();

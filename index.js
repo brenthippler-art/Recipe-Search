@@ -41,6 +41,8 @@ function closeModal() {
   recipesContainer.innerHTML = "";
   currentRecipes = [];
   recipeDetailsCache.clear();
+  searchInput.value = "";
+  searchInput.focus();
 }
 
 function setLoading(isLoading) {
@@ -65,7 +67,6 @@ async function fetchJson(url) {
   const res = await fetch(url);
   const text = await res.text();
 
-  // Some errors are not JSON; handle safely
   let data;
   try {
     data = text ? JSON.parse(text) : null;
@@ -209,7 +210,7 @@ function renderRecipes(recipesArr) {
     card.className = "recipe-card";
     card.dataset.id = recipe.id;
 
-    const image = recipe.image || "./assets/placeholder-recipe.png";
+    const image = recipe.image || "./assets/stockimg.png";
     const title = recipe.title || "Recipe";
 
     const calories = getNutrient(recipe, "Calories");
@@ -404,7 +405,7 @@ function demoRecipes(query) {
     {
       id: "demo-1",
       title: `${query} Bowl`,
-      image: "./assets/placeholder-recipe.png",
+      image: "./assets/stockimg.png",
       nutrition: {
         nutrients: [
           { name: "Calories", amount: 420, unit: "kcal" },
@@ -417,7 +418,7 @@ function demoRecipes(query) {
     {
       id: "demo-2",
       title: `${query} Skillet`,
-      image: "./assets/placeholder-recipe.png",
+      image: "./assets/stockimg.png",
       nutrition: {
         nutrients: [
           { name: "Calories", amount: 610, unit: "kcal" },
@@ -430,7 +431,7 @@ function demoRecipes(query) {
     {
       id: "demo-3",
       title: `${query} Salad`,
-      image: "./assets/placeholder-recipe.png",
+      image: "./assets/stockimg.png",
       nutrition: {
         nutrients: [
           { name: "Calories", amount: 280, unit: "kcal" },
