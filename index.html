@@ -1,83 +1,306 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Recipe Search Project</title>
 
-      <link rel="stylesheet" href="./index.css">
-      <script src="./index.js" defer></script>
-        <script src="https://kit.fontawesome.com/b1a92af70c.js" crossorigin="anonymous"></script>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Primary meta -->
+  <title>Smart Recipe Search</title>
+  <meta name="description" content="Search recipes by food or ingredient, then sort results by calories, carbs, protein, and fat.">
+
+  <!-- Open Graph (social sharing) -->
+  <meta property="og:title"       content="Smart Recipe Search">
+  <meta property="og:description" content="Search recipes by food or ingredient, then sort results by macronutrients.">
+  <meta property="og:type"        content="website">
+
+  <!-- Prevent phone number auto-linking on iOS -->
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./index.css">
+
+ <!-- Font Awesome (icons) -->
+<script src="https://kit.fontawesome.com/b1a92af70c.js" crossorigin="anonymous" defer></script>
+
+  <!-- App script (defer keeps it non-blocking) -->
+  <script src="./index.js" defer></script>
 </head>
 
 <body>
-  <main id="landingContent">
-    <section id="landing">
-      <!-- Nav -->
-      <div class="nav">
-        <div class="nav__left">
-          <figure class="nav__logo--wrapper">
-            <img class="nav__logo" src="./assets/logo.png" alt="project logo">
-          </figure>
+
+  <!-- =============================================
+       Skip link — lets keyboard users jump past nav
+       WCAG 2.4.1 Bypass Blocks
+       ============================================= -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- =============================================
+       Screen-reader live region — JS writes status
+       messages here (search progress, result counts)
+       WCAG 4.1.3 Status Messages
+       ============================================= -->
+  <div
+    id="srAnnouncer"
+    class="visually-hidden"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  ></div>
+
+  <!-- =============================================
+       Mobile nav overlay (darkens page behind drawer)
+       ============================================= -->
+  <div
+    class="nav__mobile-overlay"
+    aria-hidden="true"
+  ></div>
+
+  <!-- =============================================
+       Mobile nav drawer
+       WCAG 2.4.3 Focus Order, 2.1.2 No Keyboard Trap
+       ============================================= -->
+  <nav
+    id="mobileMenu"
+    class="nav__mobile-menu"
+    aria-label="Mobile navigation"
+  >
+    <ul role="list" style="list-style:none; padding:0; margin:0; display:contents;">
+      <li>
+  <a href="#" class="nav__mobile-link" onclick="event.preventDefault(); goHome();">Home</a>
+</li>
+<li>
+  <a href="#" class="nav__mobile-link" onclick="event.preventDefault(); goToSearch();">Search</a>
+</li>
+      <li>
+        <!-- Contact is unimplemented; aria-disabled signals this to screen readers -->
+        <a
+          href="#"
+          class="nav__mobile-link nav__mobile-link--contact"
+          onclick="event.preventDefault(); openContactModal(this);"
+        >
+          Contact
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- =============================================
+       Main landing content
+       ============================================= -->
+  <div id="landingContent">
+
+    <main id="main-content"><!-- skip-link target -->
+
+      <section id="landing" aria-label="Recipe search">
+
+        <!-- ----- Nav ----- -->
+        <nav class="nav" aria-label="Main navigation">
+
+          <div class="nav__left">
+            <!-- role="img" on figure + meaningful alt on img covers WCAG 1.1.1 -->
+            <figure class="nav__logo--wrapper" role="img" aria-label="Smart Recipe Search logo">
+              <img
+                class="nav__logo"
+                src="./assets/logo.png"
+                alt=""
+                aria-hidden="true"
+              >
+            </figure>
+          </div>
+
+          <!-- Desktop links -->
+          <ul class="nav__right" role="list">
+            <li>
+  <a href="#" class="nav__link link__hover-effect" onclick="event.preventDefault(); goHome();">Home</a>
+</li>
+<li>
+  <a href="#" class="nav__link link__hover-effect" onclick="event.preventDefault(); goToSearch();">Search</a>
+</li>
+            <li>
+              <a
+                href="#"
+                class="nav__link--contact"
+                onclick="event.preventDefault(); openContactModal(this);"
+              >
+                Contact
+              </a>
+            </li>
+          </ul>
+
+          <!-- Hamburger (mobile only, visible via CSS) -->
+          <button
+            class="nav__hamburger"
+            type="button"
+            aria-expanded="false"
+            aria-controls="mobileMenu"
+            aria-label="Open navigation menu"
+          >
+            <span class="nav__hamburger-bar" aria-hidden="true"></span>
+            <span class="nav__hamburger-bar" aria-hidden="true"></span>
+            <span class="nav__hamburger-bar" aria-hidden="true"></span>
+          </button>
+
+        </nav><!-- /nav -->
+
+        <!-- ----- Hero ----- -->
+        <header class="hero">
+          <h1 class="hero__title">
+            Search. Sort. <span class="green">Eat.</span>
+          </h1>
+          <p class="hero__cta">
+            Search by ingredients or meal name and sort results by
+            macros.
+          </p>
+        </header>
+
+        <!-- ----- Search ----- -->
+        <!-- role="search" marks this as a landmark (WCAG 1.3.6) -->
+        <div class="search" role="search">
+
+          <label for="searchInput" class="visually-hidden">
+            Search for a recipe or ingredient
+          </label>
+
+          <input
+            type="search"
+            id="searchInput"
+            class="search__input"
+            name="food"
+            placeholder="e.g. Fettuccine Alfredo"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+            aria-describedby="searchHint"
+          >
+
+          <button
+            type="button"
+            id="searchBtn"
+            class="submit__btn"
+            aria-label="Search recipes"
+            aria-busy="false"
+          >
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          </button>
+
+          <!-- Spinner shown while loading (WCAG 1.3.1 — not just colour) -->
+          <div class="search__loading" aria-hidden="true" role="presentation">
+            <i class="fa-solid fa-spinner" aria-hidden="true"></i>
+          </div>
+
+        </div><!-- /search -->
+
+        <!-- Inline error message (JS toggles .is-visible) — replaces alert() -->
+        <!-- aria-live="assertive" interrupts the screen reader immediately -->
+        <div
+          class="search__error"
+          role="alert"
+          aria-hidden="true"
+          aria-live="assertive"
+          aria-atomic="true"
+        >
+          <span class="search__error-icon" aria-hidden="true">
+            <i class="fa-solid fa-circle-exclamation"></i>
+          </span>
+          <span class="search__error-msg"></span>
         </div>
-        
-        <ul class="nav__right">
-          <li><a href="#" class="nav__link link__hover-effect">Home</a></li>
-          <li><a href="#" class="nav__link link__hover-effect">Search</a></li>
-          <li><a href="#" class="nav__link--contact btn--pink"  onclick="event.preventDefault(); alert('This feature has not been implemented yet.')">Contact</a></li>
-        </ul>          
-      </div>
-     
-      <!-- hero -->
-      <div class="hero">
-        <h1 class="hero__title">Search. Sort. <span class="green">Eat.</span></h1>
-        <h2 class="hero__cta">Search by ingredients or meal name and sort recipes by calories, carbs, protein, and fat.</h2>
-      </div>
-      
-      <!-- Search -->
-      <div class="search">
-        <input type="text" id="searchInput" class="food" name="food" placeholder="example: Fettuccine Alfredo">
-        <button type="button" id="searchBtn" class="submit__btn">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </button>
-        <div class="search__loading" aria-hidden="true">
-          <i class="fa-solid fa-spinner"></i>
+
+        <!-- Hint text referenced by aria-describedby on the input -->
+        <p id="searchHint" class="visually-hidden">
+          Type a food name or ingredient, then press Enter or the search button.
+        </p>
+
+        <!-- ----- Hero animation ----- -->
+        <div class="animation" aria-hidden="true" role="presentation">
+          <img
+            src="./assets/undraw_groceries_4via.png"
+            class="food__img--one"
+            alt=""
+          >
+          <img
+            src="./assets/undraw_barbecue_k11q.png"
+            class="food__img--two"
+            alt=""
+          >
         </div>
-      </div>
+
+      </section><!-- /landing -->
+
+    </main><!-- /main -->
+
     
-      <!-- Animation -->
-      <div class="animation">
-        <img src="./assets/undraw_groceries_4via.png" class="food__img--one" alt="lady grocery shopping">
-        <img src="./assets/undraw_barbecue_k11q.png" class="food__img--two" alt="man grilling">
+
+  </div><!-- /landingContent -->
+  <!-- ----- Footer ----- -->
+    <footer class="footer">
+      <div class="footer__inner">
+
+        <figure class="footer__logo--wrapper" role="img" aria-label="Smart Recipe Search logo">
+          <img
+            class="footer__logo"
+            src="./assets/logo.png"
+            alt=""
+            aria-hidden="true"
+          >
+        </figure>
+
+        <p class="copyright">© 2026 Brenton Hippler. All rights reserved.</p>
+
+        <ul class="footer__right" role="list">
+          <li>
+            <a href="#" class="footer__link link__hover-effect--white">Home</a>
+          </li>
+          <li>
+            <a href="#" class="footer__link link__hover-effect--white">Search</a>
+          </li>
+          <li>
+            <a
+              href="#"
+              class="footer__link link__hover-effect--white"
+              onclick="event.preventDefault(); openContactModal(this);"
+            >
+              Contact
+            </a>
+          </li>
+        </ul>
+
       </div>
-     </section>
-  </main>
+    </footer><!-- /footer -->
 
-  <!-- Footer -->
-  <div class="footer">
-    <div class="footer__inner">
-      <figure class="footer__logo--wrapper">
-        <img class="footer__logo" src="./assets/logo.png" alt="project logo">
-      </figure>
-      <p class="copyright">© 2026 Brenton Hippler. All rights reserved.</p>
-      <ul class="footer__right">
-        <li><a href="#" class="footer__link link__hover-effect--white">Home</a></li>
-        <li><a href="#" class="footer__link link__hover-effect--white">Search</a></li>
-        <li><a href="#" class="footer__link link__hover-effect--white"  onclick="event.preventDefault(); alert('This feature has not been implemented yet.')">Contact</a></li>
-      </ul>     
-    </div> 
-  </div>
-
-  <!-- Results Modal -->
-  <div id="resultsModal" class="modal hidden" aria-hidden="true">
+  <!-- =============================================
+       Results modal
+       role="dialog" + aria-modal tells screen readers
+       this is a modal window (WCAG 4.1.2)
+       ============================================= -->
+  <div
+    id="resultsModal"
+    class="modal hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+    aria-labelledby="modalTitle"
+  >
     <div class="modal__panel">
+
       <div class="modal__header">
+
         <h2 id="modalTitle" class="modal__title">Recipes</h2>
-        <p class="muted">Hover for recipe details</p>
+        <p class="muted" aria-live="polite">
+          Click or press Enter on a card to load recipe details.
+        </p>
+
         <div class="modal__controls">
-          <label for="sortSelect" class="recipes__label">Sort</label>
-          <select id="sortSelect" class="recipes__select">
-            <option value=""></option>
+
+          <label for="sortSelect" class="recipes__label">
+            Sort by
+          </label>
+          <select
+            id="sortSelect"
+            class="recipes__select"
+            aria-label="Sort recipes"
+          >
+            <option value="">— No sort —</option>
             <option value="calories_asc">Calories: Low → High</option>
             <option value="calories_desc">Calories: High → Low</option>
             <option value="carbs_asc">Carbs: Low → High</option>
@@ -87,14 +310,82 @@
             <option value="fat_asc">Fat: Low → High</option>
             <option value="fat_desc">Fat: High → Low</option>
           </select>
-          <button id="newSearchBtn" class="recipes__new-search">New Search</button>
-          <button id="closeModalBtn" class="modal__close" aria-label="Close">✕</button>
-        </div>
-      </div>
+
+          <button
+            id="newSearchBtn"
+            type="button"
+            class="recipes__new-search"
+          >
+            New Search
+          </button>
+
+          <button
+            id="closeModalBtn"
+            type="button"
+            class="modal__close"
+            aria-label="Close results"
+          >
+            <!-- Using × entity for reliable rendering; aria-label provides the name -->
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
+
+        </div><!-- /modal__controls -->
+
+      </div><!-- /modal__header -->
+
       <div class="modal__body">
-        <div id="recipesContainer" class="recipes__grid"></div>
-      </div>   
+        <!-- Cards are injected here by index.js -->
+        <div
+          id="recipesContainer"
+          class="recipes__grid"
+          role="list"
+          aria-label="Recipe results"
+          aria-live="polite"
+          aria-relevant="additions removals"
+        ></div>
+      </div><!-- /modal__body -->
+
+    </div><!-- /modal__panel -->
+  </div><!-- /resultsModal -->
+  <!-- =============================================
+     Contact modal
+     ============================================= -->
+<div
+  id="contactModal"
+  class="modal hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-hidden="true"
+  aria-labelledby="contactModalTitle"
+>
+  <div class="modal__panel modal__panel--small">
+
+    <div class="modal__header modal__header--contact">
+  <h2 id="contactModalTitle" class="modal__title">Contact</h2>
+
+  <button
+    id="closeContactModalBtn"
+    type="button"
+    class="modal__close"
+    aria-label="Close contact info"
+  >
+    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+  </button>
+</div>
+
+    <div class="modal__body">
+      <p class="contact__text">
+        Reach out directly at
+        <a href="mailto:brenton@brentoncodes.dev" class="contact__email">brenton@brentoncodes.dev</a>
+      </p>
     </div>
-  </div>  
+
+  </div>
+</div>
+<!-- Print-only ingredient list, populated by JS before printing -->
+<div id="printIngredients" class="print-only" aria-hidden="true">
+  <h2 id="printIngredientsTitle"></h2>
+  <ul id="printIngredientsList"></ul>
+</div>
 </body>
 </html>
